@@ -64,6 +64,9 @@ async def handler(websocket, path):
                     tmpdir = inbound['tmpdir']
                 else:
                     tmpdir = gettempdir() + os.sep + 'svtplay_downloads' + os.sep # use default tmp directory if tmpdir is not set in json
+
+                if not os.path.isdir(tmpdir):
+                    os.mkdir(tmpdir)
                 os.chdir(tmpdir)
 
                 for k in inbound:
