@@ -11,6 +11,8 @@ This is a client in the form of a userscript specifically for http://svtplay.se.
 Requirements
 ~~~~~~~~~~~~
 - Python 3.6
+- websockets module
+- pexpect module
 - svtplay-dl
 - Web browser
 
