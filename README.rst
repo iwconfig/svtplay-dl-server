@@ -16,6 +16,12 @@ Requirements
 - svtplay-dl
 - Web browser
 
+Known bugs
+~~~~~~~~~~
+- Sometimes something this might occur in the servers output: ::
+
+    Outfile: filename [sXeY].mp4 [01/28][=.......................................] ETA: 0:00:00
+
 Todo
 ~~~~
 - Add setup.py
