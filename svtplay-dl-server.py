@@ -31,11 +31,15 @@ async def handler(websocket, path):
         connected.add(ip)
     try:
         while True:
-            inbound = json.loads(await websocket.recv())
-            # print (inbound)
+            try:
+                inbound = json.loads(await websocket.recv())
+            except json.decoder.JSONDecodeError:
+                print('ERROR: Inbound was not in JSON format.')
+                return
             if inbound is None:
                 return
             if 'url' not in inbound:
+                print('ERROR: No url specified in JSON.')
                 await websocket.send(json.dumps({'ERROR': 'No url specified in JSON.'}))
                 return
             else:
