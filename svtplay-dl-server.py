@@ -15,7 +15,7 @@ from glob import glob
 from shutil import move
 from tempfile import gettempdir
 
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
