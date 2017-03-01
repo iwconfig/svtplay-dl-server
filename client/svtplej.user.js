@@ -93,7 +93,10 @@ function LocalMain () {
                 }
             }
         }
-        //////
+        if (window.location.href.indexOf('/video/') === -1) {
+            cmd_options += ' -A';
+        }
+        ////// End of configuration
 
         var span = document.createElement('span');
         span.setAttribute('class', 'play_video-page__title-element userscript');
@@ -288,10 +291,10 @@ function LocalMain () {
         document.getElementsByClassName("play_video-page__title")[0].appendChild(span2);
     }
 
-    if (window.location.href.indexOf('video') !== -1) {
     if (document.querySelector('.play_video-page__title')) {
         run();
-    }}
+    }
+
     var target = document.querySelector('title');
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
