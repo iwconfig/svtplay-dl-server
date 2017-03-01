@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: helvetica;
+            color: #222;
+        }
+        li>p {
+            margin-bottom: 0;
+        }
+        .line {
+            margin-bottom: 0.3em;
+            display: table;
+        }
+        .admonition-title {
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        aside {
+            float: right;
+            width: 20%;
+            display: table;
+            padding: 1em;
+            margin: 1em;
+            margin-right: 0;
+        }
+        .footnote,
+        .cite {
+            width: 98%;
+            display: table;
+            border: 1px solid #ddd;
+            padding: 0.5%;
+            margin: 0.5%;
+        }
+        .footnote .du-label,
+        .cite .du-label {
+            float: left;
+            height: 100%;
+            width: 5%;
+            margin-right: 1em;
+            padding: 0.5%;
+            text-align: center;
+            display: table;
+        }
+        th,
+        th p {
+            font-weight: bold;
+        }
+        .field-label {
+            font-weight: bold;
+        }
+        ol.arabic {
+            list-style-type: decimal;
+        }
+        ol.loweralpha {
+            list-style-type: lower-alpha;
+        }
+        ol.upperalpha {
+            list-style-type: upper-alpha;
+        }
+        ol.lowerroman {
+            list-style-type: lower-roman;
+        }
+        ol.upperroman {
+            list-style-type: upper-roman;
+        }
+        img.align-left {
+            float: left;
+        }
+        img.align-right {
+            float: right;
+        }
+        .container {
+            width: 50%;
+            height: 50%;
+            background: lightgreen;
+            margin: auto;
+            padding: 10px;
+        }
+        .left {
+            width: auto;
+            margin-left: 10px;
+            margin-right: 20px;
+            float: left;
+            border-radius: 10px;
+            border-color: black;
+            border-style: dotted;
+            padding: 5px;
+        }
+        .right {
+            margin-left: 5%;
+        }
+        .left a {
+            color: black;
+            float:left;
+            clear:left;
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        #screenshots {
+            margin: auto;
+            display: block;
+            width: 90%;
+        }
+        h1 a {
+            color: black;
+            text-decoration: none;
+        }
+        h2 a {
+            color: black;
+            text-decoration: none;
+        }
+        img:hover {
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+ <div class="container">
+ <div class="left">
+  <a href="https://github.com/iwconfig/svtplay-dl-server">Github</a>
+  <a href="http://svtplay-dl.se">svtplay-dl</a>
+  <a href="http://svtplay.se">Svtplay</a>
+  <a href="https://www.python.org/downloads/release/python-360/">Python 3.6</a>
+  <a href="https://github.com/pexpect/pexpect">pexpect</a>
+  <br/>
+    <br/>
+      <br/>
+        <br/>
+
+ </div>
+
+ <div id="index" class="right">
+    <h1><a href="https://github.com/iwconfig/svtplay-dl-server/raw/master/svtplay-dl-server.py">svtplay-dl-server</a></h1>
+    <p>A websocket server written in python running svtplay-dl through <code>pexpect</code>, taking instructions from inbound in JSON format and pushing the output (including progress bar) to the client.</p>
+    <div>
+        <div>The use of pexpect instead of <code>svtplay_dl</code> as a module is cumbersome, limited and buggy. But this will do for now until I've figured out a proper way to handle the IO.</div>
+    </div>
+    <section id="svtplej-user-js">
+        <header>
+            <h2><a href="https://github.com/iwconfig/svtplay-dl-server/raw/master/client/svtplej.user.js">svtplej.user.js</a></h2>
+        </header>
+        <p>This is a client in the form of a userscript specifically for <a class="reference external" href="http://svtplay.se">http://svtplay.se</a>. My javascript skills are limited, but this get the job done and I'm pretty happy with it.</p>
+        <img id="screenshots" src="https://github.com/iwconfig/svtplay-dl-server/raw/master/client/screenshots/userscript-1.png"></img>
+        <br/>
+        <img id="screenshots" src="https://github.com/iwconfig/svtplay-dl-server/raw/master/client/screenshots/userscript-2.png"></img>
+        <section id="requirements">
+            <header>
+                <h3>Requirements</h3>
+            </header>
+            <ul>
+                <li>
+                    <p>Python 3.6</p>
+                </li>
+                <li>
+                    <p>svtplay-dl</p>
+                </li>
+                <li>
+                    <p>Web browser</p>
+                </li>
+            </ul>
+        </section>
+        <section id="todo">
+            <header>
+                <h3>Todo</h3>
+            </header>
+            <ul>
+                <li>
+                    <p>Add setup.py</p>
+                </li>
+                <li>
+                    <p>Ditch <code>pexpect</code> for better IO with <code>svtplay_dl</code> module instead</p>
+                </li>
+                <li>
+                    <p>More clients: Chrome/Firefox extension</p>
+                </li>
+                <li>
+                    <p>Implement logging module</p>
+                </li>
+            </ul>
+            <section id="contribute">
+                <header>
+                    <h4>Contribute</h4>
+                </header>
+                <p>I'm sure some bugs are occurring with the use of pexpect. Please fork and we can be happy together :)</p>
+                <section id="license">
+                    <header>
+                        <h5>License</h5>
+                    </header>
+                    <p>Coming soon</p>
+                    <div>
+                        <div></div>
+                    </div>
+                    <hr>
+                    <p>Älskar dig mamma. &lt;3</p>
+                </section>
+            </section>
+        </section>
+    </section>
+
+</div>
+</div>
+</body>
+
+</html>
