@@ -40,16 +40,19 @@ async def handler(websocket, path):
                 return
             if inbound is None:
                 return
+
             if 'url' not in inbound:
                 print('ERROR: No url specified in JSON.')
                 await websocket.send(json.dumps({'ERROR': 'No url specified in JSON.'}))
                 return
             else:
                 url = inbound['url']
+
             if 'path' in inbound:
                 path = inbound['path'].rstrip(os.path.sep) + os.path.sep
             else:
                 path = os.path.expanduser("~") + os.path.sep # use home directory if path is not set in json
+
             if 'title' in inbound:
                 title = inbound['title']
                 info = inbound['info']
@@ -67,6 +70,12 @@ async def handler(websocket, path):
                 else:
                     tmpdir = gettempdir() + os.sep + 'svtplay_downloads' + os.sep # use default tmp directory if tmpdir is not set in json
 
+                try:
+                    if not os.path.isdir(os.path.dirname(path)):
+                        os.makedirs(path)
+                except PermissionError:
+                    print('ERROR: You dont have permission to create path: {}'.format(os.path.dirname(path)))
+                    await websocket.send(json.dumps({'ERROR': 'You dont have permission to create path: {}'.format(os.path.dirname(path))}))
                 if not os.path.isdir(tmpdir):
                     os.mkdir(tmpdir)
                 os.chdir(tmpdir)
@@ -93,8 +102,7 @@ async def handler(websocket, path):
                             print(message)
                             await websocket.send(json.dumps({'status': message}))
                             break
-                        if not os.path.isdir(os.path.dirname(path)):
-                            os.makedirs(path)
+
                         pattern = re.sub(r'\[', '[[]', tmpdir+filename)
                         pattern = re.sub(r'(?<!\[)\].*', '[]]', pattern)
                         for f in glob(pattern+'*'):
