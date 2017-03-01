@@ -86,7 +86,7 @@ function LocalMain () {
             }
         } else {
             if (info) {
-                if (/igår|mån|tis|ons|tor|fre|lör|sön/g.test(info.toLowerCase())) {
+                if (/idag|igår|mån|tis|ons|tor|fre|lör|sön/g.test(info.toLowerCase())) {
                     format += ' [{i}]';
                 } else {
                     format += ' - {i}';
