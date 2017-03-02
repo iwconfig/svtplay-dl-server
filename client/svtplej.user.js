@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         svtplej
 // @namespace    https://github.com/iwconfig
-// @version      1.2.0
+// @version      1.2.1
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
 // @match        http://www.svtplay.se/*
