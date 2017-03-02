@@ -66,35 +66,42 @@ function LocalMain () {
         var cmd_options = '-M -f --force-subtitle';
         var tmpdir = '/tmp/svtplay_downloads/';
 
-        if (title === info) {
-            info = null;
-        }
-        if (title.indexOf(programTitle) === -1) {
-            title = programTitle + ': ' + title;
-        }
-        if (__svtplay.videoTitlePage.video.episodic) {
-            season = __svtplay.videoTitlePage.video.season;
-            episode = __svtplay.videoTitlePage.video.episodeNumber;
-            if (info.indexOf('Avsnitt') !== -1 && info.indexOf(':') === -1) {
-                format += ' [s{s}e{ee}]';
-            } else {
-                format += ' - ';
-                if (info) {
-                    format += ' {i}';
-                }
-                format += ' [s{s}e{ee}]';
-            }
-        } else {
-            if (info) {
-                if (/idag|igår|mån|tis|ons|tor|fre|lör|sön/g.test(info.toLowerCase())) {
-                    format += ' [{i}]';
-                } else {
-                    format += ' - {i}';
-                }
-            }
-        }
         if (window.location.href.indexOf('/video/') === -1) {
             cmd_options += ' -A';
+            if (__svtplay.videoTitlePage.video.episodic) {
+                season = __svtplay.videoTitlePage.video.season;
+                format += '/Season {s}';
+            }
+            info = null;
+        } else {
+
+            if (title === info) {
+                info = null;
+            }
+            if (title.indexOf(programTitle) === -1) {
+                title = programTitle + ': ' + title;
+            }
+            if (__svtplay.videoTitlePage.video.episodic) {
+                season = __svtplay.videoTitlePage.video.season;
+                episode = __svtplay.videoTitlePage.video.episodeNumber;
+                if (info.indexOf('Avsnitt') !== -1 && info.indexOf(':') === -1) {
+                    format += ' [s{s}e{ee}]';
+                } else {
+                    format += ' - ';
+                    if (info) {
+                        format += ' {i}';
+                    }
+                    format += ' [s{s}e{ee}]';
+                }
+            } else {
+                if (info) {
+                    if (/idag|igår|mån|tis|ons|tor|fre|lör|sön/g.test(info.toLowerCase())) {
+                        format += ' [{i}]';
+                    } else {
+                        format += ' - {i}';
+                    }
+                }
+            }
         }
         ////// End of configuration
 

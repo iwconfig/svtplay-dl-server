@@ -55,35 +55,42 @@ async def handler(websocket, path):
 
             if 'title' in inbound:
                 title = inbound['title']
-                info = inbound['info']
-                season = inbound['season']
-                episode = inbound['episode']
+                if 'info' in inbound:
+                    info = inbound['info']
+                if 'season' in inbound:
+                    season = inbound['season']
+                if 'episode' in inbound:
+                    episode = inbound['episode']
+
+            if 'format' in inbound:
                 fmt = inbound['format']
-
-                if 'format' in inbound:
-                    opts = inbound['cmd_options']
+            if 'cmd_options' in inbound:
+                opts = inbound['cmd_options']
+                if '-A' in opts:
+                    DownloadAll = True
                 else:
-                    opts = ''
+                    DownloadAll = False
+            else:
+                opts = ''
+            if 'tmpdir' in inbound:
+                tmpdir = inbound['tmpdir']
+            else:
+                tmpdir = gettempdir() + os.sep + 'svtplay_downloads' + os.sep # use default tmp directory if tmpdir is not set in json
 
-                if 'tmpdir' in inbound:
-                    tmpdir = inbound['tmpdir']
-                else:
-                    tmpdir = gettempdir() + os.sep + 'svtplay_downloads' + os.sep # use default tmp directory if tmpdir is not set in json
+            try:
+                if not os.path.isdir(os.path.dirname(path)):
+                    os.makedirs(path)
+            except PermissionError:
+                print('ERROR: You dont have permission to create path: {}'.format(os.path.dirname(path)))
+                await websocket.send(json.dumps({'ERROR': 'You dont have permission to create path: {}'.format(os.path.dirname(path))}))
+            if not os.path.isdir(tmpdir):
+                os.mkdir(tmpdir)
+            os.chdir(tmpdir)
 
-                try:
-                    if not os.path.isdir(os.path.dirname(path)):
-                        os.makedirs(path)
-                except PermissionError:
-                    print('ERROR: You dont have permission to create path: {}'.format(os.path.dirname(path)))
-                    await websocket.send(json.dumps({'ERROR': 'You dont have permission to create path: {}'.format(os.path.dirname(path))}))
-                if not os.path.isdir(tmpdir):
-                    os.mkdir(tmpdir)
-                os.chdir(tmpdir)
-
-                for k in inbound:
-                    print('{}: {}'.format(k,inbound[k]))
-                filename = fmt.format(t=title, i=info if info else '', s=season if season else '', e=episode if episode else '', ee=format(int(episode), '02d') if episode else '')
-                path += filename
+            for k in inbound:
+                print('{}: {}'.format(k,inbound[k]))
+            filename = fmt.format(t=title, i=info if info else '', s=season if season else '', e=episode if episode else '', ee=format(int(episode), '02d') if episode else '')
+            path += filename
             while inbound != None:
                 cmd = 'svtplay-dl {options} -o "{output}" "{url}"'.format(options=opts, output=filename, url=url)
                 child = pexpect.spawn(cmd)
@@ -103,17 +110,22 @@ async def handler(websocket, path):
                             await websocket.send(json.dumps({'status': message}))
                             break
 
-                        pattern = re.sub(r'\[', '[[]', tmpdir+filename)
-                        pattern = re.sub(r'(?<!\[)\].*', '[]]', pattern)
-                        for f in glob(pattern+'*'):
-                            dest = os.path.join(os.path.dirname(path), os.path.basename(f))
-                            if os.path.isfile(dest):
-                                os.remove(dest)
-                            move(f, os.path.dirname(path))
-                            moved = "Moved '{}' into {}".format(os.path.basename(f), os.path.dirname(path))
-                            print(moved)
-                            await websocket.send(json.dumps({'INFO': moved}))
-                            await websocket.send(json.dumps({'finish': True}))
+                        if DownloadAll:
+                            # pattern = path
+                            move(os.path.join(tmpdir, filename), os.path.dirname(path))
+                            moved = "Moved directory '{}' into {}".format(filename, os.path.dirname(path))
+                        else:
+                            pattern = re.sub(r'\[', '[[]', os.path.join(tmpdir, filename))
+                            pattern = re.sub(r'(?<!\[)\].*', '[]]', pattern)
+                            for f in glob(pattern+'*'):
+                                dest = os.path.join(os.path.dirname(path), os.path.basename(f))
+                                if os.path.isfile(dest):
+                                  os.remove(dest)
+                                move(f, os.path.dirname(path))
+                                moved = "Moved '{}' into {}".format(os.path.basename(f), os.path.dirname(path))
+                        print(moved)
+                        await websocket.send(json.dumps({'INFO': moved}))
+                        await websocket.send(json.dumps({'finish': True}))
                         print('-'*60)
                         break
                     if p == 1:
@@ -127,15 +139,20 @@ async def handler(websocket, path):
 
                         if 'INFO:' in out:
                             if 'Outfile:' in out:
+                                if DownloadAll:
+                                  f = glob(os.path.join(tmpdir, filename, '*'))
+                                  f.sort(key=os.path.getmtime, reverse=True)
+                                  f = os.path.basename(f[0]).rsplit('.', 1)[0]
+                                else:
+                                  f = filename
                                 if '.srt' in out:
-                                    data['INFO'] = 'Downloading subtitle: {}'.format(filename+'.srt')
+                                    data['INFO'] = 'Downloading subtitle: {}{}'.format(f, '.srt')
                                 if '.m4a' in out:
-                                    data['INFO'] = 'Downloading audio: {}'.format(filename+'.m4a')
+                                    data['INFO'] = 'Downloading audio: {}{}'.format(f, '.m4a')
                                 elif any(x in out for x in ('.mp4', '.ts')):
-                                    data['INFO'] = 'Downloading video: {}'.format(filename+'.mp4' if '.mp4' in out else '.ts')
+                                    data['INFO'] = 'Downloading video: {}{}'.format(f, '.mp4' if '.mp4' in out else '.ts')
                             else:
                                 data['INFO'] = out[6:]
-                            # if not 'ETA: ' in out:
                             print (out)
 
                         if 'ERROR: ' in out:
@@ -156,9 +173,15 @@ async def handler(websocket, path):
             except EnvironmentError:
                 pass
             finally:
-                for f in glob(tmpdir.rsplit('.')[0]+'*'):
+                if DownloadAll:
+                    tmp = os.path.join(tmpdir, filename) + os.sep
+                else:
+                    tmp = tmpdir.rsplit('.', 1)[0]
+                for f in glob(tmp+'*'):
                     os.remove(f)
                     print('Removed', f)
+                if DownloadAll:
+                    os.rmdir(os.path.dirname(tmp))
         print("Client disconnected.")
     except KeyboardInterrupt:
         sys.exit(1)
