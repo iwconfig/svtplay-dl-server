@@ -62,6 +62,16 @@
 
 <body>
  <div class="container">
+     <script>
+        var colorpalette = ['#ffd1d5', '#ffd0a0', '#fef69f', '#99ee99', '#aec6ff'];
+
+        var randomcolor_bg = colorpalette[Math.floor(Math.random() * colorpalette.length)];
+        document.body.style.background = randomcolor_bg;
+
+        var randomcolor_div = colorpalette[Math.floor(Math.random() * colorpalette.length)];
+        document.querySelector('.container').style.background = randomcolor_div;
+        document.querySelector('.container').style.boxShadow = '1px 0px 5px '+randomcolor_div;
+     </script>
     <a id="backtoindex" href="/svtplay-dl-server" title="Go back to main page"><strong>&#8604; index.html</strong></a>
  <div class="left">
   <a href="https://github.com/iwconfig/svtplay-dl-server">Github</a>

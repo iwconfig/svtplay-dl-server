@@ -10,7 +10,6 @@
     <style type="text/css">
         body {
             font-family: helvetica;
-            color: #222;
         }
         li>p {
             margin-bottom: 0;
@@ -80,7 +79,7 @@
         .container {
             width: 60%;
             height: 60%;
-            background: lightgreen;
+            background: #FFC966;
             margin: auto;
             padding: 10px;
             border-radius: 3px;
@@ -127,32 +126,21 @@
             background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
         }
     </style>
-    <script>
-        var ahref1 = document.createElement('a');
-        var ahref2 = document.createElement('a');
-        document.addEventListener ("DOMContentLoaded", links, false);
-        function links() {
-            document.querySelector('hr').align = 'center';
-            var h1 = document.querySelector('h1');
-            var h2 = document.querySelector('#svtplej-user-js').querySelector('h2');
-
-            ahref1.innerHTML = h1.innerHTML;
-            ahref1.href = 'https://github.com/iwconfig/svtplay-dl-server/blob/master/svtplay-dl-server.py';
-            ahref1.title = 'Go look at svtplay-dl-server.py';
-            h1.innerHTML = '';
-            h1.appendChild(ahref1);
-
-            ahref2.innerHTML = h2.innerHTML;
-            ahref2.href = 'https://github.com/iwconfig/svtplay-dl-server/blob/master/client/svtplej.user.js';
-            ahref2.title = 'Go look at svtplej.user.js';
-            h2.innerHTML = '';
-            h2.appendChild(ahref2);
-        }
-    </script>
 </head>
 
 <body>
+
  <div class="container">
+     <script>
+        var colorpalette = ['#ffd1d5', '#ffd0a0', '#fef69f', '#99ee99', '#aec6ff'];
+
+        var randomcolor_bg = colorpalette[Math.floor(Math.random() * colorpalette.length)];
+        document.body.style.background = randomcolor_bg;
+
+        var randomcolor_div = colorpalette[Math.floor(Math.random() * colorpalette.length)];
+        document.querySelector('.container').style.background = randomcolor_div;
+        document.querySelector('.container').style.boxShadow = '1px 0px 5px '+randomcolor_div;
+     </script>
     <a id="toscreenshots" href="screenshots.html" title="Go look at screenshots!"><strong>&#8605; screenshots.html</strong></a>
  <div class="left">
   <a href="https://github.com/iwconfig/svtplay-dl-server">Github</a>
@@ -249,6 +237,25 @@
     </section>
 </div>
 </div>
+<script>
+    var ahref1 = document.createElement('a');
+    var ahref2 = document.createElement('a');
+    document.querySelector('hr').align = 'center';
+    var h1 = document.querySelector('h1');
+    var h2 = document.querySelector('#svtplej-user-js').querySelector('h2');
+
+    ahref1.innerHTML = h1.innerHTML;
+    ahref1.href = 'https://github.com/iwconfig/svtplay-dl-server/blob/master/svtplay-dl-server.py';
+    ahref1.title = 'Go look at svtplay-dl-server.py';
+    h1.innerHTML = '';
+    h1.appendChild(ahref1);
+
+    ahref2.innerHTML = h2.innerHTML;
+    ahref2.href = 'https://github.com/iwconfig/svtplay-dl-server/blob/master/client/svtplej.user.js';
+    ahref2.title = 'Go look at svtplej.user.js';
+    h2.innerHTML = '';
+    h2.appendChild(ahref2);
+</script>
 </body>
 
 </html>
