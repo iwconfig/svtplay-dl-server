@@ -279,7 +279,9 @@ function LocalMain () {
                             dl_link.insertAdjacentHTML('afterend', finished_link.outerHTML);
 
                         } else {
-                            line.innerHTML = Object.values(json);
+                            for (var i in json) {
+                                line.innerHTML = json[i].replace(/INFO: /g, '<br/>');
+                            }
                         }
                     }
                 }
