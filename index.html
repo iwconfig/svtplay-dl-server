@@ -3,7 +3,10 @@
 
 <head>
     <meta charset="utf-8">
-    <title></title>
+    <title>svtplay-dl-server</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+
     <style type="text/css">
         body {
             font-family: helvetica;
@@ -75,11 +78,13 @@
             float: right;
         }
         .container {
-            width: 50%;
-            height: 50%;
+            width: 60%;
+            height: 60%;
             background: lightgreen;
             margin: auto;
             padding: 10px;
+            border-radius: 3px;
+            box-shadow: 1px 0px 5px #90ee70;
         }
         .left {
             width: auto;
@@ -92,7 +97,8 @@
             padding: 5px;
         }
         .right {
-            margin-left: 5%;
+            margin-top: 5%;
+            margin-left: 50px;
         }
         .left a {
             color: black;
@@ -101,10 +107,9 @@
             margin-top: 5px;
             margin-bottom: 5px;
         }
-        #screenshots {
-            margin: auto;
-            display: block;
-            width: 90%;
+        #toscreenshots {
+            color: black;
+            text-decoration: none;
         }
         h1 a {
             color: black;
@@ -114,14 +119,41 @@
             color: black;
             text-decoration: none;
         }
-        img:hover {
-            position: absolute;
+        hr {
+            margin-right: -20px;
+            margin-left: -50px;
+            border: 0;
+            height: 1px;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
         }
     </style>
+    <script>
+        var ahref1 = document.createElement('a');
+        var ahref2 = document.createElement('a');
+        document.addEventListener ("DOMContentLoaded", links, false);
+        function links() {
+            document.querySelector('hr').align = 'center';
+            var h1 = document.querySelector('h1');
+            var h2 = document.querySelector('#svtplej-user-js').querySelector('h2');
+
+            ahref1.innerHTML = h1.innerHTML;
+            ahref1.href = 'https://github.com/iwconfig/svtplay-dl-server/blob/master/svtplay-dl-server.py';
+            ahref1.title = 'Go look at svtplay-dl-server.py';
+            h1.innerHTML = '';
+            h1.appendChild(ahref1);
+
+            ahref2.innerHTML = h2.innerHTML;
+            ahref2.href = 'https://github.com/iwconfig/svtplay-dl-server/blob/master/client/svtplej.user.js';
+            ahref2.title = 'Go look at svtplej.user.js';
+            h2.innerHTML = '';
+            h2.appendChild(ahref2);
+        }
+    </script>
 </head>
 
 <body>
  <div class="container">
+    <a id="toscreenshots" href="screenshots.html" title="Go look at screenshots!"><strong>&#8605; screenshots.html</strong></a>
  <div class="left">
   <a href="https://github.com/iwconfig/svtplay-dl-server">Github</a>
   <a href="http://svtplay-dl.se">svtplay-dl</a>
@@ -136,19 +168,16 @@
  </div>
 
  <div id="index" class="right">
-    <h1><a href="https://github.com/iwconfig/svtplay-dl-server/raw/master/svtplay-dl-server.py">svtplay-dl-server</a></h1>
+    <h1>svtplay-dl-server</h1>
     <p>A websocket server written in python running svtplay-dl through <code>pexpect</code>, taking instructions from inbound in JSON format and pushing the output (including progress bar) to the client.</p>
     <div>
         <div>The use of pexpect instead of <code>svtplay_dl</code> as a module is cumbersome, limited and buggy. But this will do for now until I've figured out a proper way to handle the IO.</div>
     </div>
     <section id="svtplej-user-js">
         <header>
-            <h2><a href="https://github.com/iwconfig/svtplay-dl-server/raw/master/client/svtplej.user.js">svtplej.user.js</a></h2>
+            <h2>svtplej.user.js</h2>
         </header>
         <p>This is a client in the form of a userscript specifically for <a class="reference external" href="http://svtplay.se">http://svtplay.se</a>. My javascript skills are limited, but this get the job done and I'm pretty happy with it.</p>
-        <img id="screenshots" src="https://github.com/iwconfig/svtplay-dl-server/raw/master/client/screenshots/userscript-1.png"></img>
-        <br/>
-        <img id="screenshots" src="https://github.com/iwconfig/svtplay-dl-server/raw/master/client/screenshots/userscript-2.png"></img>
         <section id="requirements">
             <header>
                 <h3>Requirements</h3>
@@ -158,10 +187,26 @@
                     <p>Python 3.6</p>
                 </li>
                 <li>
+                    <p>websockets module</p>
+                </li>
+                <li>
+                    <p>pexpect module</p>
+                </li>
+                <li>
                     <p>svtplay-dl</p>
                 </li>
                 <li>
                     <p>Web browser</p>
+                </li>
+            </ul>
+        </section>
+        <section id="known-bugs">
+            <header>
+                <h3>Known bugs</h3>
+            </header>
+            <ul>
+                <li>
+                    <p>Sometimes something this might occur in the servers output:</p><pre>Outfile: filename [sXeY].mp4 [01/28][=.......................................] ETA: 0:00:00</pre>
                 </li>
             </ul>
         </section>
@@ -202,7 +247,6 @@
             </section>
         </section>
     </section>
-
 </div>
 </div>
 </body>
