@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         svtplej
-// @namespace    https://github.com/iwconfig
-// @version      1.2.1
+// @namespace    https://github.com/iwconfig/svtplay-dl-server
+// @version      1.3.0
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
 // @match        http://www.svtplay.se/*
@@ -25,6 +25,12 @@
 
 // Also change the variables in the beginning of run() to whatever suits you.
 // Further down you can also edit the format conditionally when dealing with season and episode for example.
+
+// Some stuff, like categories and genres for example, is in Swedish by default,
+// I assume most of you who are using this are speaking swedish but if not or if you prefer another language
+// then submit an issue about this and i'll fix english translations for you.
+// Ultimately this script is only temporary as i plan to make it a standalone extension,
+// which would make translations among other things a piece of cake. So for now I keep it simple.
 
 
 window.addEventListener ("load", LocalMain, false);
@@ -56,49 +62,86 @@ function LocalMain () {
         //var info = document.querySelector('.play_video-page__title-element--sub').textContent;
 
         ////// Variables for svtplay-dl
-        var path = '/home/ubuntu/workspace/';
         var programTitle = __svtplay.videoTitlePage.titlePage.programTitle;
-        var title = __svtplay.videoTitlePage.video.programTitle; //.replace(': ', ' - ')
+        var title = __svtplay.videoTitlePage.video.programTitle; // optional: add .replace(': ', ' - ')
         var info = __svtplay.videoTitlePage.video.title;
         var season = null;
-        var episode = null; // season and episode variables change based on conditions below
+        var episode = null;
         var format = '{t}';
         var cmd_options = '-M -f --force-subtitle';
         var tmpdir = '/tmp/svtplay_downloads/';
+        var path = '/media/SVT';
 
-        if (window.location.href.indexOf('/video/') === -1) {
+        path = path.replace(/\/+$|$/, "/");
+        var genres = [ 'Drama', 'Humor', 'Livsstil', 'Underhållning', 'Kultur', 'Samhälle & fakta', 'Nyheter', 'Sport', 'Barn', 'Komedi' ];
+        var clusters = JSON.parse(JSON.stringify(__svtplay.videoTitlePage.video.clusters));
+        var access_service = __svtplay.videoTitlePage.video.accessService;
+        if (__svtplay.videoTitlePage.video.episodic) {
+            path += 'TV-serier/';
+        } else {
+            if (__svtplay.videoTitlePage.video.titleType === "CLIP") {
+                path += 'Videoklipp/';
+            } else {
+                var category = ['Dokumentär', 'Film', 'Kortfilm'];
+                for (var i = 0; i < clusters.length; i++) {
+                    if (category.includes(clusters[i].name)) {
+                        console.log(category[category.indexOf(clusters[i].name)]);
+                        path += category[category.indexOf(clusters[i].name)] + 'er/';
+                        break;
+                    }
+                }
+            }
+        }
+        if (access_service === 'signInterpretation') {
+            path += 'Teckenspråkstolkat/';
+        }
+        if (access_service === 'audioDescription') {
+            path += 'Syntolkat/';
+        }
+        if (window.location.href.indexOf('/video/') === -1 && window.location.href.indexOf('/klipp/') === -1) {
             cmd_options += ' -A';
             if (__svtplay.videoTitlePage.video.episodic) {
                 season = __svtplay.videoTitlePage.video.season;
-                format += '/Season {s}';
+                format += '/Säsong {s}';
             }
             info = null;
         } else {
-
-            if (title === info) {
-                info = null;
-            }
-            if (title.indexOf(programTitle) === -1) {
-                title = programTitle + ': ' + title;
-            }
-            if (__svtplay.videoTitlePage.video.episodic) {
-                season = __svtplay.videoTitlePage.video.season;
-                episode = __svtplay.videoTitlePage.video.episodeNumber;
-                if (info.indexOf('Avsnitt') !== -1 && info.indexOf(':') === -1) {
-                    format += ' [s{s}e{ee}]';
-                } else {
-                    format += ' - ';
-                    if (info) {
-                        format += ' {i}';
-                    }
-                    format += ' [s{s}e{ee}]';
-                }
+            if (__svtplay.videoTitlePage.video.titleType === "CLIP") {
+                path += programTitle + '/';
+                title = info;
             } else {
-                if (info) {
-                    if (/idag|igår|mån|tis|ons|tor|fre|lör|sön/g.test(info.toLowerCase())) {
-                        format += ' [{i}]';
+                for (var i = 0; i < clusters.length; i++) {
+                    if (genres.includes(clusters[i].name)) {
+                        path += clusters[i].name + '/';
+                        console.log(path);
+                        break;
+                    }
+                }
+                if (title === info) {
+                    info = null;
+                }
+                if (title.indexOf(programTitle) === -1) {
+                    title = programTitle + ': ' + title;
+                }
+                if (__svtplay.videoTitlePage.video.episodic) {
+                    season = __svtplay.videoTitlePage.video.season;
+                    episode = __svtplay.videoTitlePage.video.episodeNumber;
+                    if (info.indexOf('Avsnitt') !== -1 && info.indexOf(':') === -1) {
+                        format += ' [s{s}e{ee}]';
                     } else {
-                        format += ' - {i}';
+                        format += ' - ';
+                        if (info) {
+                            format += '{i}';
+                        }
+                        format += ' [s{s}e{ee}]';
+                    }
+                } else {
+                    if (info) {
+                        if (/idag|igår|mån|tis|ons|tor|fre|lör|sön/g.test(info.toLowerCase())) {
+                            format += ' [{i}]';
+                        } else {
+                            format += ' - {i}';
+                        }
                     }
                 }
             }
@@ -111,10 +154,12 @@ function LocalMain () {
         span2.setAttribute('class', 'userscript');
         span2.innerHTML = '<br/>';
 
-        var imdblink = document.createElement('a');
-        imdblink.setAttribute('href', 'http://www.imdb.com/find?s=tt&q=' + title.replace(/ /g, '+'));
-        imdblink.appendChild(imdb);
-        span.appendChild(imdblink);
+        if (__svtplay.videoTitlePage.video.titleType !== "CLIP") {
+            var imdblink = document.createElement('a');
+            imdblink.setAttribute('href', 'http://www.imdb.com/find?s=tt&q=' + __svtplay.videoTitlePage.video.programTitle.replace(/ /g, '+'));
+            imdblink.appendChild(imdb);
+            span.appendChild(imdblink);
+        }
 
         var finished_link = document.createElement('a');
         finished_link.setAttribute('id', 'finished');
@@ -213,7 +258,7 @@ function LocalMain () {
             };
 
             ws.onopen = function(url) {
-
+                var articleId = __svtplay.videoTitlePage.video.articleId.toString();
                 progresslabel.innerHTML = 'Connected';
                 var jsondata = {'url'  : document.URL,
                                 'path' : path,
@@ -223,7 +268,8 @@ function LocalMain () {
                                 'episode': episode,
                                 'format': format,
                                 'cmd_options': cmd_options,
-                                'tmpdir': tmpdir };
+                                'tmpdir': tmpdir,
+                                'articleId': articleId };
                 ws.send(JSON.stringify(jsondata));
 
                 var cancel = document.createElement('label');
