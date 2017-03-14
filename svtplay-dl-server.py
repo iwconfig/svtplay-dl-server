@@ -12,10 +12,10 @@ sys.stdout = Unbuffered(sys.stdout)
 sys.stderr = Unbuffered(sys.stderr)
 import os, re, asyncio, websockets, json, pexpect
 from glob import glob
-from shutil import move
+from shutil import move, rmtree
 from tempfile import gettempdir
 
-__version__ = '1.0.2'
+__version__ = '1.1.0'
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
@@ -72,10 +72,15 @@ async def handler(websocket, path):
                     DownloadAll = False
             else:
                 opts = ''
+
             if 'tmpdir' in inbound:
-                tmpdir = inbound['tmpdir']
+                tmpdir = inbound['tmpdir'] + os.sep
+                if 'articleId' in inbound:
+                    tmpdir = os.path.join(tmpdir, inbound['articleId']) + os.sep
             else:
-                tmpdir = gettempdir() + os.sep + 'svtplay_downloads' + os.sep # use default tmp directory if tmpdir is not set in json
+                tmpdir = os.path.join(gettempdir(), 'svtplay_downloads') + os.sep # use default tmp directory if tmpdir is not set in json
+                if 'articleId' in inbound:
+                    tmpdir = os.path.join(tmpdir, inbound['articleId']) + os.sep
 
             try:
                 if not os.path.isdir(os.path.dirname(path)):
@@ -97,6 +102,26 @@ async def handler(websocket, path):
                 cpl = child.compile_pattern_list([pexpect.EOF, '\[(\d+)\/(\d+)\]|INFO: (.+)|ERROR: (.+)'])
                 seg = 0
                 error = False
+
+                def cleanup():
+                    print("Client disconnected.")
+                    if child.isalive():
+                        try:
+                            print('Terminating...')
+                            child.sendcontrol('c')
+                            child.terminate()
+                        except EnvironmentError:
+                            pass
+                        finally:
+                            if DownloadAll:
+                                rmtree(tmpdir)
+                                print('Removed', tmpdir)
+                            else:
+                                for f in glob(tmpdir+'*'):
+                                    os.remove(f)
+                                    print('Removed', f)
+                                os.rmdir(tmpdir)
+
                 while True:
                     data = {}
                     p = child.expect_list(cpl, timeout=None)
@@ -164,30 +189,29 @@ async def handler(websocket, path):
                         await websocket.send(json.dumps(data))
                 break
 
-    except (websockets.exceptions.ConnectionClosed, KeyboardInterrupt):
-        if child.isalive():
-            try:
-                print('Terminating...')
-                child.sendcontrol('c')
-                child.terminate()
-            except EnvironmentError:
-                pass
-            finally:
-                if DownloadAll:
-                    tmp = os.path.join(tmpdir, filename) + os.sep
-                else:
-                    tmp = tmpdir.rsplit('.', 1)[0]
-                for f in glob(tmp+'*'):
-                    os.remove(f)
-                    print('Removed', f)
-                if DownloadAll:
-                    os.rmdir(os.path.dirname(tmp))
-        print("Client disconnected.")
     except KeyboardInterrupt:
-        sys.exit(1)
+        print('\rctrl-c called: Download cancelled. Press ctrl-c again to shut down server.')
+        websocket.close()
+        cleanup()
+        pass
+    except websockets.exceptions.ConnectionClosed:
+        cleanup()
 
 if __name__ == "__main__":
     server = websockets.serve(handler, host, port)
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(server)
-    loop.run_forever()
+    tasks = asyncio.gather(
+      asyncio.ensure_future(server)
+    )
+
+    try:
+        loop.run_until_complete(tasks)
+        loop.run_forever()
+    except KeyboardInterrupt:
+        print("\rCanceling tasks and shutting down...")
+        tasks.cancel()
+        # loop.run_forever()
+        tasks.exception()
+    finally:
+        loop.close()
+        sys.exit(0)
