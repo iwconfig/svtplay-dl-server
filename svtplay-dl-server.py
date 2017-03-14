@@ -15,7 +15,7 @@ from glob import glob
 from shutil import move, rmtree
 from tempfile import gettempdir
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
@@ -149,6 +149,7 @@ async def handler(websocket, path):
                                 move(f, os.path.dirname(path))
                                 moved = "Moved '{}' into {}".format(os.path.basename(f), os.path.dirname(path))
                         print(moved)
+                        os.rmdir(tmpdir)
                         await websocket.send(json.dumps({'INFO': moved}))
                         await websocket.send(json.dumps({'finish': True}))
                         print('-'*60)
@@ -183,9 +184,9 @@ async def handler(websocket, path):
                         if 'ERROR: ' in out:
                             data['ERROR'] = out[7:]
                             print (out)
-                            error = True
-                            child.terminate()
-                            await asyncio.sleep(.1)
+                            if not 'Setting language as undetermined.' in out:
+                                error = True
+                                child.terminate()
                         await websocket.send(json.dumps(data))
                 break
 
