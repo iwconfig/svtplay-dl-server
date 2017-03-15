@@ -37,7 +37,7 @@ window.addEventListener ("load", LocalMain, false);
 
 function LocalMain () {
     'use strict';
-    var ws_url = 'wss://localhost:5000'; // Websocket URL
+    var ws_url = 'ws://localhost:5000'; // Websocket URL
 
     var imdb = document.createElement('img');
     imdb.src = GM_getResourceURL('imdb_img');
