@@ -15,7 +15,7 @@ from glob import glob
 from shutil import move, rmtree
 from tempfile import gettempdir
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
@@ -26,11 +26,6 @@ port = 5000
 connected = set()
 
 async def handler(websocket, path):
-    ip = websocket.remote_address[0]
-    if not websocket.remote_address[0] in connected:
-        print("New client connected.")
-        await websocket.send(json.dumps({'status': 'CONNECTED'}))
-        connected.add(ip)
     try:
         while True:
             try:
@@ -40,6 +35,15 @@ async def handler(websocket, path):
                 return
             if inbound is None:
                 return
+
+            if 'articleId' in inbound:
+                articleId = inbound['articleId']
+                if articleId in connected:
+                    websocket.close()
+                    return
+                print("New client connected.")
+                await websocket.send(json.dumps({'status': 'CONNECTED'}))
+                connected.add(articleId)
 
             if 'url' not in inbound:
                 print('ERROR: No url specified in JSON.')
@@ -73,14 +77,13 @@ async def handler(websocket, path):
             else:
                 opts = ''
 
-            if 'tmpdir' in inbound:
-                tmpdir = inbound['tmpdir'] + os.sep
-                if 'articleId' in inbound:
-                    tmpdir = os.path.join(tmpdir, inbound['articleId']) + os.sep
+            if inbound['tmpdir'] and inbound['tmpdir'] != 'default':
+                tmpdir = os.path.join(inbound['tmpdir'], articleId+os.sep if articleId else '')
             else:
-                tmpdir = os.path.join(gettempdir(), 'svtplay_downloads') + os.sep # use default tmp directory if tmpdir is not set in json
-                if 'articleId' in inbound:
-                    tmpdir = os.path.join(tmpdir, inbound['articleId']) + os.sep
+                tmpdir = os.path.join(gettempdir(), 'svtplay_downloads', articleId+os.sep if articleId else '') # use default tmp directory if tmpdir is not set in json
+                if inbound['tmpdir'] != 'default':
+                  await websocket.send(json.dumps({'INFO': 'Temp path not set. Using default: {}'.format(os.path.dirname(tmpdir.rstrip(os.sep)))}))
+                inbound['tmpdir'] = tmpdir
 
             try:
                 if not os.path.isdir(os.path.dirname(path)):
