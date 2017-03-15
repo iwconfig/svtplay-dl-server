@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         svtplej
 // @namespace    https://github.com/iwconfig/svtplay-dl-server
-// @version      1.3.1
+// @version      1.3.2
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
 // @match        http://www.svtplay.se/*
@@ -249,7 +249,7 @@ function LocalMain () {
                             node.parentNode.removeChild( node );
                         });
                         ws.close();
-                        run();
+                        LocalMain();
                     }
                 });
 
