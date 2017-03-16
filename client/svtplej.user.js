@@ -14,6 +14,11 @@
 // @resource     finished http://i.imgur.com/VKsFPh5.png
 // ==/UserScript==
 
+/* global __svtplay */
+/* global GM_getResourceURL */
+/* global GM_addStyle */
+
+
 // Tested in chrome with Tampermonkey.
 
 // Bare with me.
@@ -69,12 +74,15 @@ function LocalMain () {
         var episode = null;
         var format = '{t}';
         var cmd_options = '-M -f --force-subtitle';
-        var tmpdir = '/tmp/svtplay_downloads/';
+        var tmpdir = 'default'; // Default is '/tmp/svtplay_downloads/'
         var path = '/media/SVT';
 
-        path = path.replace(/\/+$|$/, "/");
+        if (path.substr(-1) !== '/') {
+            path += '/';
+        }
+
         var genres = [ 'Drama', 'Humor', 'Livsstil', 'Underhållning', 'Kultur', 'Samhälle & fakta', 'Nyheter', 'Sport', 'Barn', 'Komedi' ];
-        var clusters = JSON.parse(JSON.stringify(__svtplay.videoTitlePage.video.clusters));
+        var clusters = __svtplay.videoTitlePage.video.clusters;
         var access_service = __svtplay.videoTitlePage.video.accessService;
         if (__svtplay.videoTitlePage.video.episodic) {
             path += 'TV-serier/';
@@ -351,14 +359,14 @@ function LocalMain () {
     }
 
     var target = document.querySelector('title');
-    var observer = new MutationObserver(function(mutations) {
+    var observer = new window.MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (document.querySelector('.userscript')) {
                 Array.prototype.forEach.call(document.querySelectorAll('.userscript'), function( node ) {
                     node.parentNode.removeChild( node );
                 });
             }
-            location.reload();
+            window.location.reload();
             document.addEventListener("DOMContentLoaded", function(event) {
                 run();
             });
