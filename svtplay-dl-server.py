@@ -15,7 +15,7 @@ from glob import glob
 from shutil import move, rmtree
 from tempfile import gettempdir
 
-__version__ = '1.1.2'
+__version__ = '1.1.3'
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
@@ -59,8 +59,14 @@ async def handler(websocket, path):
 
             if 'title' in inbound:
                 title = inbound['title']
+                if '/' in title:
+                    title = title.replace('/', '\u2571')
+                    inbound['title'] = title
                 if 'info' in inbound:
                     info = inbound['info']
+                    if info and '/' in info:
+                        info = info.replace('/', '\u2571')
+
                 if 'season' in inbound:
                     season = inbound['season']
                 if 'episode' in inbound:
@@ -139,9 +145,8 @@ async def handler(websocket, path):
                             break
 
                         if DownloadAll:
-                            # pattern = path
                             move(os.path.join(tmpdir, filename), os.path.dirname(path))
-                            moved = "Moved directory '{}' into {}".format(filename, os.path.dirname(path))
+                            moved = "Moved directory '{}' into '{}'".format(filename, os.path.dirname(path))
                         else:
                             pattern = re.sub(r'\[', '[[]', os.path.join(tmpdir, filename))
                             pattern = re.sub(r'(?<!\[)\].*', '[]]', pattern)
@@ -150,7 +155,7 @@ async def handler(websocket, path):
                                 if os.path.isfile(dest):
                                   os.remove(dest)
                                 move(f, os.path.dirname(path))
-                                moved = "Moved '{}' into {}".format(os.path.basename(f), os.path.dirname(path))
+                                moved = "Moved '{}' into '{}'".format(os.path.basename(f), os.path.dirname(path))
                         print(moved)
                         os.rmdir(tmpdir)
                         await websocket.send(json.dumps({'INFO': moved}))
