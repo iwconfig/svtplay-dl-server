@@ -15,7 +15,7 @@ from glob import glob
 from shutil import move, rmtree
 from tempfile import gettempdir
 
-__version__ = '1.1.3'
+__version__ = '1.1.4'
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
@@ -114,6 +114,7 @@ async def handler(websocket, path):
 
                 def cleanup():
                     print("Client disconnected.")
+                    connected.discard(articleId)
                     if child.isalive():
                         try:
                             print('Terminating...')
