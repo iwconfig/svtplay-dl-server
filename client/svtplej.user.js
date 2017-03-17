@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         svtplej
 // @namespace    https://github.com/iwconfig/svtplay-dl-server
-// @version      1.3.2
+// @version      1.3.3
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
 // @match        http://www.svtplay.se/*
@@ -63,8 +63,6 @@ function LocalMain () {
     finished_img.id = 'finished';
 
     function run(){
-        //var title = document.querySelector('.play_video-page__title-element--top').querySelector('span').textContent.replace(/, avsnitt \d+/g, '');
-        //var info = document.querySelector('.play_video-page__title-element--sub').textContent;
 
         ////// Variables for svtplay-dl
         var programTitle = __svtplay.videoTitlePage.titlePage.programTitle;
@@ -82,24 +80,33 @@ function LocalMain () {
         }
 
         var genres = [ 'Drama', 'Humor', 'Livsstil', 'Underhållning', 'Kultur', 'Samhälle & fakta', 'Nyheter', 'Sport', 'Barn', 'Komedi' ];
-        var clusters = __svtplay.videoTitlePage.video.clusters;
+        var clusters = [];
         var access_service = __svtplay.videoTitlePage.video.accessService;
-        if (__svtplay.videoTitlePage.video.episodic) {
-            path += 'TV-serier/';
+
+        for (var i = 0; i < __svtplay.videoTitlePage.video.clusters.length; i++) {
+            clusters.push(__svtplay.videoTitlePage.video.clusters[i].name);
+        }
+
+        if (__svtplay.videoTitlePage.video.titleType === "CLIP") {
+            path += 'Klipp/';
         } else {
-            if (__svtplay.videoTitlePage.video.titleType === "CLIP") {
-                path += 'Videoklipp/';
+            if (__svtplay.videoTitlePage.video.episodic && !clusters.includes('Dokumentär')) {
+                path += 'TV-serier/';
             } else {
                 var category = ['Dokumentär', 'Film', 'Kortfilm'];
                 for (var i = 0; i < clusters.length; i++) {
-                    if (category.includes(clusters[i].name)) {
-                        console.log(category[category.indexOf(clusters[i].name)]);
-                        path += category[category.indexOf(clusters[i].name)] + 'er/';
+                    if (category.includes(clusters[i])) {
+                        console.log(category[category.indexOf(clusters[i])]);
+                        path += category[category.indexOf(clusters[i])] + 'er/';
+                        if (__svtplay.videoTitlePage.video.episodic && clusters[i] === 'Dokumentär') {
+                            path += 'Dokumentärserier/';
+                        }
                         break;
                     }
                 }
             }
         }
+
         if (access_service === 'signInterpretation') {
             path += 'Teckenspråkstolkat/';
         }
@@ -108,23 +115,31 @@ function LocalMain () {
         }
         if (window.location.href.indexOf('/video/') === -1 && window.location.href.indexOf('/klipp/') === -1) {
             cmd_options += ' -A';
+            info = null;
             if (__svtplay.videoTitlePage.video.episodic) {
                 season = __svtplay.videoTitlePage.video.season;
-                format += '/Säsong {s}';
+                format += '/Season {s}';
             }
-            info = null;
+            for (var i = 0; i < clusters.length; i++) {
+                if (genres.includes(clusters[i])) {
+                    path += clusters[i] + '/';
+                    console.log(path);
+                    break;
+                }
+            }
         } else {
             if (__svtplay.videoTitlePage.video.titleType === "CLIP") {
                 path += programTitle + '/';
                 title = info;
             } else {
                 for (var i = 0; i < clusters.length; i++) {
-                    if (genres.includes(clusters[i].name)) {
-                        path += clusters[i].name + '/';
+                    if (genres.includes(clusters[i])) {
+                        path += clusters[i] + '/';
                         console.log(path);
                         break;
                     }
                 }
+
                 if (title === info) {
                     info = null;
                 }
@@ -350,8 +365,12 @@ function LocalMain () {
         }, false);
 
         span.appendChild(dl_link);
-        document.getElementsByClassName("play_video-page__title")[0].appendChild(span);
-        document.getElementsByClassName("play_video-page__title")[0].appendChild(span2);
+        span.insertAdjacentHTML('afterbegin', '<br/>');
+        document.getElementsByClassName('play_video-page__title')[0].appendChild(span);
+        document.getElementsByClassName('play_video-page__title')[0].appendChild(span2);
+        if (window.location.href.indexOf('/video/') === -1 && window.location.href.indexOf('/klipp/') === -1) {
+            span2.insertAdjacentHTML('afterend', '<br/>');
+        }
     }
 
     if (document.querySelector('.play_video-page__title')) {
