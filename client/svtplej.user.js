@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         svtplej
 // @namespace    https://github.com/iwconfig/svtplay-dl-server
-// @version      1.3.3
+// @version      1.3.4
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
 // @match        http://www.svtplay.se/*
@@ -14,7 +14,7 @@
 // @resource     finished http://i.imgur.com/VKsFPh5.png
 // ==/UserScript==
 
-/* global __svtplay */
+/* global __svtplay:true */
 /* global GM_getResourceURL */
 /* global GM_addStyle */
 
@@ -385,10 +385,21 @@ function LocalMain () {
                     node.parentNode.removeChild( node );
                 });
             }
-            window.location.reload();
-            document.addEventListener("DOMContentLoaded", function(event) {
-                run();
-            });
+            var request = new XMLHttpRequest();
+            request.onreadystatechange = (e) => {
+                if (request.readyState !== 4) {
+                    return;
+                }
+                if (request.status === 200) {
+                    var janson = JSON.parse(/__svtplay'] = ({.*});/.exec(request.responseText)[1]);
+                    __svtplay = janson;
+                    run();
+                } else {
+                    console.warn('error: could not retrieve new JSON data (__svtplay)');
+                }
+            };
+            request.open('GET', window.location.href);
+            request.send();
         });
     });
     var config = { attributes: true, childList: true, characterData: true, characterDataOldValue: true };
