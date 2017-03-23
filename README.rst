@@ -14,7 +14,28 @@ Requirements
 - websockets module
 - pexpect module
 - svtplay-dl
-- Web browser
+- Web browser with Tampermonkey (userscript manager)*
+
+\*I haven't tested the userscript with other managers but they *should* work as well
+
+Install and run
+~~~~~~~~~~~~
+1. Install Tampermonkey
+2. Go to the userscript in 'client' directory here in the repository on github
+3. Click on the 'Raw' button and Tampermonkey should pick it up with a prompt for installation.
+4. Install the server: ::
+
+    cd $HOME
+    git clone https://github.com/iwconfig/svtplay-dl-server.git
+    sudo cp svtplay-dl-server-master/svtplay-dl-server.py /usr/local/bin/svtplay-dl-server
+
+5. Run the server on a custom* host and port as a daemon with ``screen``\*\*: ::
+
+    screen -DmS svtplay-dl-server svtplay-dl-server localhost -p 5050
+
+\* Run ``svtplay-dl-server -h`` for help.
+
+\*\* If you are using Linux and don't have ``screen`` installed, run this: ``sudo apt-get install screen``
 
 Known bugs
 ~~~~~~~~~~
