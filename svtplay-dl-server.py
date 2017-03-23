@@ -10,18 +10,25 @@ class Unbuffered(object):
 import sys
 sys.stdout = Unbuffered(sys.stdout)
 sys.stderr = Unbuffered(sys.stderr)
-import os, re, asyncio, websockets, json, pexpect
+import os, re, asyncio, websockets, json, pexpect, argparse
 from glob import glob
 from shutil import move, rmtree
 from tempfile import gettempdir
 
-__version__ = '1.1.4'
+__version__ = '1.2.0'
+
+parser = argparse.ArgumentParser(description='A gateway for svtplay-dl in the form of a WebSocket server.', epilog="Default host is 0.0.0.0 which points to localhost, LAN IP and/or WAN IP. 0.0.0.0 means listening on anything that has network access to this computer. Change 'host' to localhost or 127.0.0.1 if you want to strictly run it locally.")
+parser.add_argument('host', metavar='HOST', nargs='?', default='0.0.0.0', help='host address (default: 0.0.0.0)')
+parser.add_argument('-p', '--port', metavar='PORT', type=int, default=5000, help='port (default: 5000)')
+args = parser.parse_args()
 
 # Default 'host' points to localhost, LAN IP and/or WAN IP.
 # 0.0.0.0 means listening on anything that has network access to this computer.
 # Change 'host' to localhost or 127.0.0.1 if you want to strictly run it locally.
-host = '0.0.0.0'
-port = 5000
+host = args.host
+port = args.port
+
+print('Running on {}:{}'.format(host, port))
 
 connected = set()
 
