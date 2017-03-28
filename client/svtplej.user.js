@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         svtplej
 // @namespace    https://github.com/iwconfig/svtplay-dl-server
-// @version      2.0
+// @version      2.0.1
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
-// @match        http://www.svtplay.se/*
+// @match        http*://www.svtplay.se/*
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.min.js
 // @grant        GM_addStyle
 // @grant        GM_getResourceURL
@@ -80,13 +80,6 @@ svt<div class="teve">
                     'labelPos': 'above',
                     'title': 'Set which PORT the server is using. Default: 5000'
                 },
-                'ws_secure':
-                {
-                    'label': 'Secure connection?',
-                    'type': 'checkbox',
-                    'default': false,
-                    'title': "Connect using a secure connection. i.e: 'ws://' or 'wss://'."
-                },
                 'path':
                 {
                     'section': 'Path locations',
@@ -161,9 +154,6 @@ svt<div class="teve">
                     if (storage[k] === '') {
                         document.getElementById('svtplej_field_'+k).style.background = 'rgba(255, 0, 0, 0.3)';
                     }
-                    if (storage[k] === false) {
-                        document.getElementById('svtplej_ws_secure_field_label').setAttribute('style', 'background: rgba(255, 255, 0, 0.5); padding: 0 27px 0 4px; margin-right: -23px;');
-                    }
                 }
                 var span = document.createElement('h3');
                 span.className = 'config_header_span';
@@ -180,11 +170,7 @@ window.addEventListener ("DOMContentLoaded", LocalMain, false);
 function LocalMain () {
     'use strict';
     checkSettings();
-    var ws_proto = 'ws';
-    if (GM_config.get('ws_secure')) {
-        ws_proto += 's';
-    }
-    var ws_url = ws_proto + '://' + GM_config.get('ws_host') + ':' + GM_config.get('ws_port'); // Websocket URL
+    var ws_url = 'wss://' + GM_config.get('ws_host') + ':' + GM_config.get('ws_port'); // Websocket URL
 
     var imdb = document.createElement('img');
     imdb.src = GM_getResourceURL('imdb_img');
