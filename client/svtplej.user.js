@@ -4,6 +4,7 @@
 // @version      2.0.1
 // @description  adds a button to imdb search and a button to download the video, connecting to a download server which is through websocket which is running svtplay-dl, and shows the process in a progress bar and command output
 // @author       iwconfig
+// @updateURL    https://github.com/iwconfig/svtplay-dl-server/raw/master/client/svtplej.user.js
 // @match        http*://www.svtplay.se/*
 // @require      https://openuserjs.org/src/libs/sizzle/GM_config.min.js
 // @grant        GM_addStyle
