@@ -14,8 +14,9 @@ import os, re, asyncio, websockets, json, pexpect, argparse
 from glob import glob
 from shutil import move, rmtree
 from tempfile import gettempdir
+from ssl import SSLContext, PROTOCOL_TLS
 
-__version__ = '1.2.0'
+__version__ = '1.3.0'
 
 parser = argparse.ArgumentParser(description='A gateway for svtplay-dl in the form of a WebSocket server.', epilog="Default host is 0.0.0.0 which points to localhost, LAN IP and/or WAN IP. 0.0.0.0 means listening on anything that has network access to this computer. Change 'host' to localhost or 127.0.0.1 if you want to strictly run it locally.")
 parser.add_argument('host', metavar='HOST', nargs='?', default='0.0.0.0', help='host address (default: 0.0.0.0)')
@@ -215,7 +216,9 @@ async def handler(websocket, path):
         cleanup()
 
 if __name__ == "__main__":
-    server = websockets.serve(handler, host, port)
+    sslcontext = SSLContext(protocol=PROTOCOL_TLS)
+    sslcontext.load_cert_chain('./key/server.pem')
+    server = websockets.serve(handler, host, port, ssl=sslcontext)
     loop = asyncio.get_event_loop()
     tasks = asyncio.gather(
       asyncio.ensure_future(server)
