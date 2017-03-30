@@ -16,7 +16,7 @@ from shutil import move, rmtree
 from tempfile import gettempdir
 from ssl import SSLContext, PROTOCOL_TLS
 
-__version__ = '1.3.0'
+__version__ = '1.3.1'
 
 parser = argparse.ArgumentParser(description='A gateway for svtplay-dl in the form of a WebSocket server.', epilog="Default host is 0.0.0.0 which points to localhost, LAN IP and/or WAN IP. 0.0.0.0 means listening on anything that has network access to this computer. Change 'host' to localhost or 127.0.0.1 if you want to strictly run it locally.")
 parser.add_argument('host', metavar='HOST', nargs='?', default='0.0.0.0', help='host address (default: 0.0.0.0)')
@@ -91,11 +91,11 @@ async def handler(websocket, path):
             else:
                 opts = ''
 
-            if inbound['tmpdir'] and inbound['tmpdir'] != 'default':
+            if inbound['tmpdir'] and inbound['tmpdir'].lower() != 'default':
                 tmpdir = os.path.join(inbound['tmpdir'], articleId+os.sep if articleId else '')
             else:
                 tmpdir = os.path.join(gettempdir(), 'svtplay_downloads', articleId+os.sep if articleId else '') # use default tmp directory if tmpdir is not set in json
-                if inbound['tmpdir'] != 'default':
+                if inbound['tmpdir'].lower() != 'default':
                   await websocket.send(json.dumps({'INFO': 'Temp path not set. Using default: {}'.format(os.path.dirname(tmpdir.rstrip(os.sep)))}))
                 inbound['tmpdir'] = tmpdir
 
@@ -165,10 +165,11 @@ async def handler(websocket, path):
                                   os.remove(dest)
                                 move(f, os.path.dirname(path))
                                 moved = "Moved '{}' into '{}'".format(os.path.basename(f), os.path.dirname(path))
-                        print(moved)
-                        os.rmdir(tmpdir)
-                        await websocket.send(json.dumps({'INFO': moved}))
+                                print(moved)
+                                await websocket.send(json.dumps({'INFO': moved}))
+                        rmtree(tmpdir)
                         await websocket.send(json.dumps({'finish': True}))
+                        await websocket.close()
                         print('-'*60)
                         break
                     if p == 1:
@@ -217,7 +218,9 @@ async def handler(websocket, path):
 
 if __name__ == "__main__":
     sslcontext = SSLContext(protocol=PROTOCOL_TLS)
-    sslcontext.load_cert_chain('./key/server.pem')
+    pemfile = './key/certificate.pem'   ## TODO: conditionally check if pemfile exist, if not then create using openssl command
+    sslcontext.load_cert_chain(pemfile) ##  also mmove it into /usr/local/lib/svtplay-dl-server until there's a proper setup.py available.
+                                        ## Add https instance for more convinient certification install to the browser.
     server = websockets.serve(handler, host, port, ssl=sslcontext)
     loop = asyncio.get_event_loop()
     tasks = asyncio.gather(
